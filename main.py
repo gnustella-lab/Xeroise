@@ -17,6 +17,7 @@ from utils.helpers import (
 )
 from utils.db import init_db, get_channels, get_ignored_users
 from utils.error_notifications import webhook_log
+from utils.sanitize import strip_emojis
 from colorama import init, Fore, Style
 
 init()
@@ -273,6 +274,10 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
         print(f"{datetime.now().strftime('[%H:%M:%S]')} Response too long, truncating.")
 
     for chunk in chunks:
+        # Strip emojis first so the disable_mentions zero-width-space protection
+        # (added below) is not removed by the emoji filter.
+        chunk = strip_emojis(chunk)
+
         if DISABLE_MENTIONS:
             chunk = chunk.replace(
                 "@", "@\u200b"

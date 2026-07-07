@@ -1,3 +1,6 @@
+from utils.sanitize import strip_emojis
+
+
 def split_response(response, max_length=1900):
     lines = response.splitlines()
     chunks = []

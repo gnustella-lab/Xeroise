@@ -10,10 +10,11 @@ from utils.error_notifications import webhook_log, print_error
 
 client = None
 model = None
+max_tokens = None
 
 
 def init_ai():
-    global client, model
+    global client, model, max_tokens
     env_path = get_env_path()
     config = load_config()
 
@@ -29,6 +30,8 @@ def init_ai():
         print("No API keys found, exiting.")
         sys.exit(1)
 
+    max_tokens = int(config["bot"].get("max_tokens", 400))
+
 
 async def generate_response(prompt, instructions, history=None):
     if not client:
@@ -42,6 +45,7 @@ async def generate_response(prompt, instructions, history=None):
                     {"role": "user", "content": prompt},
                     *history,
                 ],
+                max_tokens=max_tokens,
             )
         else:
             response = await client.chat.completions.create(
@@ -50,6 +54,7 @@ async def generate_response(prompt, instructions, history=None):
                     {"role": "system", "content": instructions},
                     {"role": "user", "content": prompt},
                 ],
+                max_tokens=max_tokens,
             )
 
         return response.choices[0].message.content
@@ -77,6 +82,7 @@ async def generate_response_image(prompt, instructions, image_url, history=None)
                     ],
                 }
             ],
+            max_tokens=max_tokens,
         )
 
         prompt_with_image = (
@@ -97,6 +103,7 @@ async def generate_response_image(prompt, instructions, image_url, history=None)
                     {"role": "user", "content": prompt_with_image},
                     *history,
                 ],
+                max_tokens=max_tokens,
             )
         else:
             history = [{"role": "user", "content": prompt_with_image}]
@@ -106,6 +113,7 @@ async def generate_response_image(prompt, instructions, image_url, history=None)
                     {"role": "system", "content": instructions},
                     {"role": "user", "content": prompt_with_image},
                 ],
+                max_tokens=max_tokens,
             )
         history.append(
             {"role": "assistant", "content": response.choices[0].message.content}

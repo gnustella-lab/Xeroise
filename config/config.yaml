@@ -46,9 +46,13 @@ bot:
   # Whether the bot should ping on replies
   reply_ping: true
 
+  # Max tokens the AI may generate per response (limits length and API usage).
+  # 1 token ~= 0.75 words. 400 ~= ~300 words. Set higher for longer replies.
+  max_tokens: 400
+
 notifications:
   error_webhook: "" 
 
-  ratelimit_notifications: true
+  ratelimit_notifications: false
 
 # For any help or support, please join the support server: https://discord.gg/yUWmzQBV4P
