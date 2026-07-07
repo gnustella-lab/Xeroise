@@ -29,6 +29,10 @@ class ErrorHandler(commands.Cog):
             print_error("Member Not Found", error)
             await webhook_log(ctx, error)
 
+        else:
+            print_error("Unhandled Command Error", error)
+            await webhook_log(ctx, error)
+
 
 async def setup(bot):
     await bot.add_cog(ErrorHandler(bot))
