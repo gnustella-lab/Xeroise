@@ -1,170 +1,193 @@
-# 🤖 Discord AI Selfbot
+# 🤖 Xeroise - Discord AI Selfbot
 
-This is a [Python](https://www.python.org)-based Discord selfbot using the `discord.py-self` library. The selfbot automatically responds to messages that mention it's trigger word and holds conversations using Groq API's Llama-3, one of the highest performing models, **all for completely free**. You can also add your own API key for ChatGPT functionality, but this is not required. It functions as a normal Discord bot, but on a real Discord account, allowing other people to talk to it within DMs, servers and even group chats without you needing to invite a bot or add the bot to the server - making it seem like a real user to others.
+Xeroise é um selfbot de Discord escrito em Python usando a biblioteca `discord.py-self`. Ela responde automaticamente quando alguém menciona a palavra-gatilho (o nome "Xeroise") ou responde a ela, e sustenta conversas usando modelos de IA via Groq ou OpenAI. Funciona numa conta real do Discord, então outras pessoas conseguem conversar com ela em DMs, servidores e group chats sem precisar convidar um bot, parecendo uma pessoa de verdade.
 
-> There is always the slight risk of a ban when using selfbots, so make sure to use this selfbot on an account you don't mind losing, but the risk is incredibly low and I have used it for over a year without any issues.
+A personalidade padrão da Xeroise é uma garota de 18 anos entusiasta de tecnologia, que conversa de forma casual e natural (em português) típica de um servidor do Discord. A personalidade vive em `config/instructions.txt` e pode ser editada livremente.
 
-### **⚠️ Important:**  
-*I take no responsibility for any actions taken against your account for using these selfbots or how users use my open-source code.*
+> ⚠️ **Aviso de TOS:** usar isso numa conta de usuário real viola os [Termos de Serviço do Discord](https://discord.com/terms) e pode levar a ban da conta em casos raros. Use por sua conta e risco, de preferência numa conta que não se importe em perder.
+>
+> Eu não me responsabilizo por nenhuma ação tomada contra a sua conta pelo uso deste código aberto, nem por como os usuários o utilizam.
 
+---
 
-<strong>Using this on a user account is prohibited by the [Discord TOS](https://discord.com/terms) and can lead to your account getting banned in _very_ rare cases.</strong>
+## ✨ O que a Xeroise faz
 
-Project made by: 
+- **Selfbot no Discord:** roda numa conta real, sem precisar convidar bot pra lugar nenhum.
+- **Persona configurável:** edite `config/instructions.txt` para a IA agir do jeito que quiser. A persona padrão é a Xeroise (18 anos, nerd de tech, fala PT-BR casual).
+- **Sem emojis (por padrão):** a persona proíbe emojis e, pra garantir, o código remove qualquer emoji da resposta no pós-processamento (`utils/sanitize.py`). O modelo não consegue desobedecer.
+- **Limite de tokens:** `config.yaml` tem `max_tokens` (padrão 400) que limita o tamanho de cada resposta e o uso da API.
+- **Reconhecimento de menção e de gatilho:** responde quando mencionada, quando respondem a ela, ou quando a palavra-gatilho aparece.
+- **Conversa contínua:** se `hold_conversation` estiver ligado, ela continua o papo mesmo sem gatilho, dentro de um timeout.
+- **Digitação realista:** com `realistic_typing`, ela "digita" por um tempo antes de enviar, parecendo uma pessoa de verdade.
+- **Reconhecimento de imagem:** consegue "ver" imagens anexadas e responder dentro da persona.
+- **Respostas por canal:** use `~toggleactive` para escolher em quais canais ela responde.
+- **Anti-spam:** tem proteção embutida contra abuso por flood.
+- **Comando de psicanálise:** `~analyse` analisa o histórico de um usuário e "perfila" a personalidade (só pra diversão).
+- **Credenciais seguras:** tokens e chaves de API ficam em `config/.env` (que não é versionado).
 
-<img style="vertical-align: center;" src="https://discord.c99.nl/widget/theme-4/451627446941515817.png"/>
+---
 
-## 📸 Preview of Text Responses
-![Example 1](https://i.imgur.com/MdfzY9C.png)
+## 🤖 Comandos
 
-![Example 2](https://i.imgur.com/AMnx8a9.png)
+Todos os comandos usam o prefixo `~` (configurável em `config.yaml`). Apenas o `owner_id` pode usar a maioria deles.
 
-## Preview of Image Responses
+| Comando | Descrição |
+| --- | --- |
+| `~pause` | Pausa/despausa as respostas de IA da Xeroise |
+| `~analyse [user]` | Analisa o histórico de mensagens de um usuário e dá um perfil "psicológico" (diversão) |
+| `~wipe` | Limpa o histórico de mensagens da Xeroise (memória) |
+| `~ping` | Mostra a latência do bot |
+| `~toggleactive [channel]` | Ativa/desativa o canal atual (ou um ID/canal mencionado) na lista de canais ativos |
+| `~toggledm` | Liga/desliga respostas em DMs |
+| `~togglegc` | Liga/desliga respostas em group chats |
+| `~ignore [user]` | Ignora ou libera um usuário |
+| `~reload` | Recarrega todos os cogs e as instruções da persona |
+| `~prompt [texto / clear]` | Visualiza, define ou limpa o prompt/instruções da IA |
+| `~restart` | Reinicia o bot inteiro |
+| `~shutdown` | Encerra o bot |
 
-![Example](https://i.imgur.com/xp2z2iN.png)
+> Se `help_command_enabled` estiver `true` no `config.yaml`, qualquer um pode usar `~help` para ver a lista. Por padrão está desligado.
 
-## 📸 Preview of Analyse command:
+---
 
-![image](https://i.imgur.com/rn4Ru09.png)
+## 🛠️ Configuração
 
-> Note: This analysis is based on the user's message history and is obviously not accurate at all. It is just for fun and should not be taken seriously.
+Tudo fica na pasta `config/`:
 
-# ✨ Features
+- **`config/.env`** - credenciais (não versionado):
+  - `DISCORD_TOKEN` - token da sua conta do Discord
+  - `GROQ_API_KEY` - chave da Groq (grátis). Se presente, é usada por padrão.
+  - `OPENAI_API_KEY` - chave da OpenAI (opcional). Se presente e a da Groq ausente, usa OpenAI.
+- **`config/config.yaml`** - ajustes do bot (modelo, trigger, canais, limites etc.)
+- **`config/instructions.txt`** - a personalidade da IA (system prompt)
 
--   [x] Discord Selfbot: Runs on a genuine Discord account, allowing you to use it without even needing to invite a bot.
--   [x] Custom AI Instructions: You can replace the text inside of `instructions.txt` and make the AI act however you'd like!
--   [x] Realistic Typing: The bot types like a real person, with varying speeds and pauses.
--   [x] Free LLM Model: Enjoy the powerful capabilities of this language model without spending a dime.
--   [x] Mention Recognition: The bot only responds when you mention it or say its trigger word.
--   [x] Reply Recognition: If replied to, the bot will continue to reply to you. It's like having a conversation with a real person!
--   [x] Message Handling: The bot knows when you're replying to someone else, so it won't cause confusion. It's like having a mind reader in your server; It can also handle numerous messages at once!
--   [x] Image Recognition: The bot can recognize images and respond to them in character!
--   [x] Channel-Specific Responses: Use the `~toggleactive` command to pick what channel the bot responds in.
--   [x] Anti-spam: The bot has a built-in anti-spam feature to prevent people from abusing it.
--   [x] Psychoanalysis Command: Use the `~analyse` command to analyse a mentioned user's messages and find insights on their personality. It's like having a therapist in your server!
--   [x] Runs on Meta AI's Llama-3: The bot uses the Llama-3 model from Meta AI, which is one of the most powerful models available.
--   [x] Secure Credential Management: Keep your credentials secure using environment variables.
--   [x] Crafted with Care: Made with lots of love and attention to detail.
+### Principais campos de `config.yaml`
 
-## 🤖 Commands
-
--   pause - Pause the bot from producing AI responses
--   analyse [user] - Analyze a user's message history and provides a - gical profile
--   wipe - Clears history of the bot
--   ping - Shows the bot's latency
--   toggleactive [channelID] - Toggle the current channel to the list of active channels
--   toggledm - Toggle if the bot should be active in DM's or not
--   togglegc - Toggle if the bot should be active in group chats or not
--   ignore [user] - Stop a user from using the bot
--   reload - Reloads all cogs
--   prompt [prompt / clear] - View, set or clear the prompt for the AI
--   restart - Restarts the entire bot
--   shutdown - Shuts down the bot
-
-# ⭐ Getting Started:
-
-### Step 1: Download the Selfbot
-- Go to the [Releases](https://github.com/Najmul190/Discord-AI-Selfbot/releases/latest) page and download the latest release for your operating system.
-
-### Step 2: Extract the files
-- Extract the files to a folder of your choice, using 7Zip or Windows Explorer.
-
-### Step 3: Getting your Discord token
-
--   Go to [Discord](https://discord.com) and login to the account you want the token of
--   Press `Ctrl + Shift + I` (If you are on Windows) or `Cmd + Opt + I` (If you are on a Mac).
--   Go to the `Network` tab
--   Type a message in any chat, or change server
--   Find one of the following headers: `"messages?limit=50"`, `"science"` or `"preview"` under `"Name"` and click on it
--   Scroll down until you find `"Authorization"` under `"Request Headers"`
--   Copy the value which is your token
-
-
-### Step 4: Getting a Groq API key
-
--   Go to [Groq](https://console.groq.com/keys) and sign up for a free account
--   Get your API key, which should look like `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` (this is an example key, it isn't real)
-
-### Step 5: Running the bot
-
-Windows: 
-
-- Simply run "Discord AI Selfbot.exe" and follow the instructions in the console to set up the bot.
-
-Linux:
-
-- Open a terminal and run `chmod +x "Discord-AI-Selfbot"` to make the file executable.
-- Run `./"Discord-AI-Selfbot"` to start the bot and follow the instructions in the console to set it up.
-
-# 🛠️ Setting up the bot manually:
-
-If you want to set up the bot manually because you don't trust the executable or want to edit the code yourself, follow the instructions below:
-
-### Step 1: Git clone repository
-
-```
-git clone https://github.com/Najmul190/Discord-AI-Selfbot
+```yaml
+bot:
+  owner_id: 123456789012345678   # seu ID de usuário (não o da conta do bot)
+  prefix: "~"                    # prefixo dos comandos
+  trigger: "Xeroise"             # palavra-gatilho que faz a Xeroise responder
+  groq_model: "llama-3.3-70b-versatile"   # modelo usado se GROQ_API_KEY estiver setada
+  openai_model: "gpt-4o"         # modelo usado se OPENAI_API_KEY estiver setada
+  allow_dm: false                # responde em DMs?
+  allow_gc: true                 # responde em group chats?
+  realistic_typing: false        # "digita" antes de enviar?
+  batch_messages: true           # aguarda mensagens em lote antes de responder
+  batch_wait_time: 10.0          # segundos aguardando mensagens em lote
+  hold_conversation: true        # continua o papo sem gatilho?
+  anti_age_ban: true             # filtra números abaixo de 13 (medida anti-ban)
+  help_command_enabled: false    # ~help disponível para todos?
+  disable_mentions: true         # bloqueia menções @everyone/@here
+  reply_ping: true               # dá ping ao responder?
+  max_tokens: 400                # limite de tokens por resposta (custo/tamanho)
 ```
 
-### Step 2: Changing directory to cloned directory
+---
+
+## ⭐ Como rodar
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/gnustella-lab/Xeroise.git
+cd Xeroise
+```
+
+### 2. Crie o ambiente e instale as dependências
+
+Recomendado usar [uv](https://docs.astral.sh/uv/) (mais rápido e não precisa de sudo):
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv bot-env
+source bot-env/bin/activate
+uv pip install -r requirements.txt
+```
+
+Ou, com o `venv` padrão do Python (precisa do pacote `python3-venv` instalado):
+
+```bash
+python3 -m venv bot-env
+source bot-env/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. Preencha as credenciais
+
+Copie o exemplo e edite com seus dados:
+
+```bash
+cp config/example.env config/.env
+```
+
+Abra `config/.env` e coloque:
+- `DISCORD_TOKEN` - veja abaixo como pegar
+- `GROQ_API_KEY` - pegue em https://console.groq.com/keys (grátis)
+
+### 4. Ajuste o `config.yaml`
+
+Edite `config/config.yaml` e defina pelo menos:
+- `owner_id` - o seu ID de usuário do Discord
+- `trigger` - a palavra que faz a Xeroise responder (padrão: `Xeroise`)
+
+Na primeira execução, se faltar algum arquivo de config, um assistente interativo (`utils/setup.py`) pergunta tudo no terminal e cria os arquivos pra você.
+
+### 5. Pegue seu token do Discord
+
+- Entre no [Discord](https://discord.com) na conta que vai usar.
+- Pressione `Ctrl + Shift + I` (Windows/Linux) ou `Cmd + Opt + I` (Mac).
+- Vá na aba **Network**.
+- Envie qualquer mensagem ou troque de servidor.
+- Procure por uma requisição com nome `messages?limit=50`, `science` ou `preview` e clique nela.
+- Role até achar **Authorization** em **Request Headers**; o valor é o seu token.
+
+> Nunca compartilhe esse token. Ele dá acesso total à sua conta.
+
+### 6. Rode a Xeroise
+
+```bash
+python3 main.py
+```
+
+Ela abre o console mostrando o login. Para que ela responda num servidor, use `~toggleactive` no canal desejado (sendo o owner). Em DMs/group chats, depende de `allow_dm`/`allow_gc` no `config.yaml`.
+
+---
+
+## 💭 Mudando a personalidade
+
+Edite `config/instructions.txt` com o sistema de instruções que quiser e use `~reload` (ou reinicie o bot) para aplicar. A persona padrão é a Xeroise, mas nada te obriga a manter assim.
+
+---
+
+## 📂 Estrutura do projeto
 
 ```
-cd Discord-AI-Selfbot
+Xeroise/
+├── main.py                 # entrypoint, eventos do Discord e fila de mensagens
+├── requirements.txt        # dependências
+├── config/
+│   ├── config.yaml         # ajustes do bot
+│   ├── example.env         # modelo de credenciais
+│   └── instructions.txt    # personalidade da IA (system prompt)
+├── cogs/
+│   ├── management.py        # comandos de dono (pause, toggle, ignore, etc.)
+│   ├── error_handler.py     # tratamento de erros de comando
+│   └── general.py           # comandos gerais (ping, help, analyse)
+└── utils/
+    ├── ai.py                # chamadas à API Groq/OpenAI (com max_tokens)
+    ├── db.py                # banco SQLite de canais/usuários ignorados
+    ├── helpers.py           # utilidades de caminho/config
+    ├── sanitize.py          # remoção de emojis no pós-processamento
+    ├── split_response.py    # quebra respostas longas em chunks
+    ├── error_notifications.py # log de erros via webhook
+    └── setup.py             # assistente de configuração interativo
 ```
 
-### Step 3: Getting your Discord token
+---
 
--   Go to [Discord](https://discord.com) and login to the account you want the token of
--   Press `Ctrl + Shift + I` (If you are on Windows) or `Cmd + Opt + I` (If you are on a Mac).
--   Go to the `Network` tab
--   Type a message in any chat, or change server
--   Find one of the following headers: `"messages?limit=50"`, `"science"` or `"preview"` under `"Name"` and click on it
--   Scroll down until you find `"Authorization"` under `"Request Headers"`
--   Copy the value which is your token
+## 🤝 Contribuindo
 
-### Step 4: Getting a Groq API key
+PRs são bem-vindos. O repositório original é o [Discord-AI-Selfbot](https://github.com/Najmul190/Discord-AI-Selfbot) do Najmul190, do qual este projeto deriva.
 
--   Go to [Groq](https://console.groq.com/keys) and sign up for a free account
--   Get your API key, which should look like `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` (this is an example key, it isn't real)
-
-### Step 5: Install all the dependencies and run the bot
-
-Windows:
-
--   Simply open `run.bat` if you're on Windows. This will install all pre-requisites, guide you through the process of setting up the bot and run it for you.
-
--   If `run.bat` doesn't work, then open CMD and run `cd Discord-AI-Selfbot` to change directory to the bot files directory
--   Create a virtual environment by running `python -m venv bot-env`
--   Activate the virtual environment by running `bot-env\Scripts\activate.bat`
--   Run `pip install -r requirements.txt` to install all the dependencies
--   Fill out `example.env` with your own credentials and rename it to `.env`
--   Fill out the `config.yaml` file with your own settings
--   Run the bot using `python3 main.py`
-
-Linux:
-
--   If you're on Linux, then run `cd the\bot\files\directory` to change directory to the bot files directory
--   Create a virtual environment by running `python3 -m venv bot-env`
--   Activate the virtual environment by running `source bot-env/bin/activate`
--   Run `pip install -r requirements.txt` to install all the dependencies
--   Fill out `example.env` with your own credentials and rename it to `.env`
--   Fill out the `config.yaml` file with your own settings
--   Run the bot using `python3 main.py`
-
-# 🗨️ How to talk to the bot
-
--   To activate it in a channel use **~toggleactive channelid** (channelid is optional).
--   To see all commands use **~help**
--   Bear in mind that the bot will only respond to **other accounts** and not itself, including any commands.
--   You must also set a trigger word within the `config.yaml`, this is the word that the bot will respond to. For example, if you set the trigger word to `John`, people must say "Hey `John`, how are you today?" for the bot to respond.
-
-
-# 💭 Changing the Personality of the bot
-
-To change the personality of the bot and set custom instructions, simply go into the `config` folder and edit the default instructions in `instructions.txt` to whatever you want! 
-
-# ❤️ Donate
-
-If you appreciate this project and want to support its development, feel free to donate by clicking this button!
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E1Q7XEZ)
+> Lembre-se: selfbots ficam numa área cinzenta dos Termos de Serviço do Discord. Use com responsabilidade.
