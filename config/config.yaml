@@ -1,30 +1,30 @@
 bot:
   # Owner ID of your account (can't be same as bot's ID)
-  owner_id: 123456789012345678
+  owner_id: 1338952504846585856
   
   # Prefix you want bot commands to be triggered with
   prefix: "~"
   
   # The word(s) you want the AI to respond to (e.g: trigger="John" or trigger="John,Jon,Jonathon")
-  trigger: "WORD_YOU_WANT_TO_TRIGGER_BOT_WITH"
+  trigger: "Xeroise"
 
   # Model of the AI you'd like to use from Groq (https://console.groq.com/docs/models) (Default: llama3-70b-8192)
-  groq_model: "llama-3.3-70b-versatile"
+  groq_model: "openai/gpt-oss-120b"
 
   # Model of the AI you'd like to use from OpenAI (https://platform.openai.com/docs/models#current-model-aliases) (Default: gpt-4o)
   openai_model: "gpt-4o"
 
   # Whether the bot should respond to DM's from people
-  allow_dm: true
+  allow_dm: false
 
   # Whether the bot should be active in group chats
   allow_gc: true
 
   # Realistic Typing - If set to true, the bot will type for a realistic(ish) amount of time before sending a message 
-  realistic_typing: false
+  realistic_typing: true
 
   # Whether to wait and collect multiple messages before responding (less API usage + more realistic than replying to every message)
-  batch_messages: true 
+  batch_messages: true
   
   # How long to wait for additional messages (in seconds)
   batch_wait_time: 10.0
@@ -37,7 +37,7 @@ bot:
   anti_age_ban: true
 
   # Whether the help command should be usable by everyone or just the owner
-  help_command_enabled: true
+  help_command_enabled: false
 
   # Disable the bot from being able to mention anyone
   # WARNING: If set to false, the bot will be able to mention @everyone and @here if it has the permissions to do so
