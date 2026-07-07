@@ -272,7 +272,11 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
         chunks = chunks[:3]
         print(f"{datetime.now().strftime('[%H:%M:%S]')} Response too long, truncating.")
 
-    for chunk in chunks:
+    last_chunk_index = len(chunks) - 1
+
+    for chunk_index, chunk in enumerate(chunks):
+        is_last_chunk = chunk_index == last_chunk_index
+
         if DISABLE_MENTIONS:
             chunk = chunk.replace(
                 "@", "@\u200b"
@@ -316,7 +320,7 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
                 conv_key = f"{message.author.id}-{message.channel.id}"
                 bot.active_conversations[conv_key] = time.time()
 
-                if chunk == chunks[-1]:
+                if is_last_chunk:
                     channel_id = message.channel.id
                     batch_start_time = time.time()
 
@@ -356,7 +360,8 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
                         pass
 
                     if (
-                        bot.message_queues[channel_id]
+                        channel_id in bot.message_queues
+                        and bot.message_queues[channel_id]
                         and not bot.processing_locks[channel_id].locked()
                     ):
                         asyncio.create_task(process_message_queue(channel_id))
@@ -368,7 +373,7 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
                 print_separator()
 
                 await webhook_log(message, e)
-            except discord.errors.Forbidden:
+            except discord.errors.Forbidden as e:
                 print(
                     f"{datetime.now().strftime('[%H:%M:%S]')} Missing permissions to send message, bot may be muted."
                 )
@@ -380,7 +385,7 @@ async def generate_response_and_reply(message, prompt, history, image_url=None):
                 print_separator()
 
                 await webhook_log(message, e)
-        except discord.errors.Forbidden:
+        except discord.errors.Forbidden as e:
             print(
                 f"{datetime.now().strftime('[%H:%M:%S]')} Missing permissions to send message, bot may be muted."
             )

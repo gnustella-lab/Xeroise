@@ -34,23 +34,15 @@ async def generate_response(prompt, instructions, history=None):
     if not client:
         init_ai()
     try:
+        messages = [{"role": "system", "content": instructions}]
         if history:
-            response = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": prompt},
-                    *history,
-                ],
-            )
-        else:
-            response = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": prompt},
-                ],
-            )
+            messages.extend(history)
+        messages.append({"role": "user", "content": prompt})
+
+        response = await client.chat.completions.create(
+            model=model,
+            messages=messages,
+        )
 
         return response.choices[0].message.content
     except Exception as e:
@@ -83,33 +75,22 @@ async def generate_response_image(prompt, instructions, image_url, history=None)
             f"{prompt} [Image of {image_response.choices[0].message.content}]"
         )
 
+        messages = [
+            {
+                "role": "system",
+                "content": instructions
+                + " Images will be described to you, with the description wrapped in [|description|], so understand that you are to respond to the description as if it were an image you can see.",
+            },
+        ]
         if history:
-            history.append({"role": "user", "content": prompt_with_image})
+            messages.extend(history)
+        messages.append({"role": "user", "content": prompt_with_image})
 
-            response = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": instructions
-                        + " Images will be described to you, with the description wrapped in [|description|], so understand that you are to respond to the description as if it were an image you can see.",
-                    },
-                    {"role": "user", "content": prompt_with_image},
-                    *history,
-                ],
-            )
-        else:
-            history = [{"role": "user", "content": prompt_with_image}]
-            response = await client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": instructions},
-                    {"role": "user", "content": prompt_with_image},
-                ],
-            )
-        history.append(
-            {"role": "assistant", "content": response.choices[0].message.content}
+        response = await client.chat.completions.create(
+            model=model,
+            messages=messages,
         )
+
         return response.choices[0].message.content
     except Exception as e:
         print_error("AI Error", e)

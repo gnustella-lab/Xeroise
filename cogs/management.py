@@ -133,7 +133,11 @@ class Management(commands.Cog):
     )
     async def reload(self, ctx):
         if ctx.author.id == self.bot.owner_id:
-            for filename in os.listdir("./cogs"):
+            cogs_dir = resource_path("cogs")
+            if not os.path.exists(cogs_dir):
+                await ctx.send("Cogs directory not found.")
+                return
+            for filename in os.listdir(cogs_dir):
                 if filename.endswith(".py"):
                     try:
                         await self.bot.unload_extension(f"cogs.{filename[:-3]}")
