@@ -84,7 +84,7 @@ def create_config():
             "trigger": get_input(
                 "Enter trigger word(s) (comma-separated for multiple)"
             ),
-            "groq_model": "llama3-70b-8192",
+            "groq_model": "llama-3.3-70b-versatile",
             "openai_model": "gpt-4o",
             "allow_dm": input("Allow DMs? (y/n): ").lower() == "y",
             "allow_gc": input("Allow group chats? (y/n): ").lower() == "y",
